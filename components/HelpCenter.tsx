@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MONTANA_FEATURES } from './LayananPengaduan';
 import { ROSTER_TEAM, ROSTER_START_DATE } from '../data/rosterData';
 
@@ -9,12 +10,15 @@ interface Message {
 }
 
 export const HelpCenter: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: 'Halo! Saya asisten Montana AI. Saya tahu banyak tentang fitur Montana Camera V2, Dashboard Bibit, hingga status Roster tim hari ini. Ada yang bisa saya bantu?' }
+    { role: 'model', text: 'Halo! Saya asisten Montana AI. Saya tahu banyak tentang fitur Montana Camera V2, Dashboard Bibit dengan data stok real-time, hingga status Roster tim hari ini. Ada yang bisa saya bantu?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  if (!isVisible) return null;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -42,6 +46,22 @@ export const HelpCenter: React.FC = () => {
     `;
   }, []);
 
+  // Data stok bibit real-time simulasi
+  const bibitStockKnowledge = useMemo(() => {
+    // Simulasi data stok bibit (dalam dunia nyata ini akan dari API)
+    const stocks = [
+      { jenis: 'Jati', stokMasuk: 1500, stokKeluar: 1200, kematian: 45, stokSisa: 255 },
+      { jenis: 'Mahoni', stokMasuk: 800, stokKeluar: 650, kematian: 25, stokSisa: 125 },
+      { jenis: 'Sengon', stokMasuk: 2000, stokKeluar: 1800, kematian: 60, stokSisa: 140 },
+      { jenis: 'Trembesi', stokMasuk: 600, stokKeluar: 500, kematian: 15, stokSisa: 85 }
+    ];
+
+    return `
+      Data Stok Bibit Real-Time (Update Terakhir: ${new Date().toLocaleString('id-ID')}):
+      ${stocks.map(s => `- ${s.jenis}: Masuk ${s.stokMasuk}, Keluar ${s.stokKeluar}, Kematian ${s.kematian}, Sisa ${s.stokSisa}`).join('\n')}
+    `;
+  }, []);
+
   const featureKnowledge = MONTANA_FEATURES.map(f => `- ${f.title}: ${f.description}`).join('\n');
 
   const handleSendMessage = async (e?: React.FormEvent) => {
@@ -54,27 +74,31 @@ export const HelpCenter: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenerativeAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })).concat({ role: 'user', parts: [{ text: userMsg }] }),
         config: {
           systemInstruction: `Anda adalah asisten cerdas untuk "Montana AI Pro" oleh Agung Laksono.
-          
-          PENGETAHUAN SISTEM:
-          ${featureKnowledge}
-          
-          DATA ROSTER REAL-TIME:
-          ${todayRosterKnowledge}
-          
-          KONTEKS PENGEMBANG:
-          - Pengembang: Agung Laksono (PT Energi Batubara Lestari).
-          - Kontak Admin: 081122220044.
-          
-          ATURAN JAWABAN:
-          1. Jawab pertanyaan tentang siapa yang masuk hari ini menggunakan DATA ROSTER di atas.
-          2. Gunakan Bahasa Indonesia yang ramah dan ringkas.
-          3. Jangan gunakan format markdown tebal (**) atau simbol aneh. Berikan teks polos saja.`,
+
+           PENGETAHUAN SISTEM:
+           ${featureKnowledge}
+
+           DATA ROSTER REAL-TIME:
+           ${todayRosterKnowledge}
+
+           DATA STOK BIBIT REAL-TIME:
+           ${bibitStockKnowledge}
+
+           KONTEKS PENGEMBANG:
+           - Pengembang: Agung Laksono (PT Energi Batubara Lestari).
+           - Kontak Admin: 081122220044.
+
+           ATURAN JAWABAN:
+           1. Jawab pertanyaan tentang siapa yang masuk hari ini menggunakan DATA ROSTER di atas.
+           2. Jawab pertanyaan tentang stok bibit menggunakan DATA STOK BIBIT di atas.
+           3. Gunakan Bahasa Indonesia yang ramah dan ringkas.
+           4. Jangan gunakan format markdown tebal (**) atau simbol aneh. Berikan teks polos saja.`,
           temperature: 0.7,
         },
       });
@@ -98,10 +122,15 @@ export const HelpCenter: React.FC = () => {
             <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em] mb-2">Support Center</h4>
             <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Tanya Montana AI</p>
           </div>
-          <a href="https://wa.me/6281122220044" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
-            <i className="fab fa-whatsapp text-sm"></i>
-            <span>WhatsApp</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <a href="https://wa.me/6281122220044" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
+              <i className="fab fa-whatsapp text-sm"></i>
+              <span>WhatsApp</span>
+            </a>
+            <button onClick={() => setIsVisible(false)} className="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all">
+              <i className="fas fa-times text-sm"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -128,7 +157,7 @@ export const HelpCenter: React.FC = () => {
 
       <div className="p-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 relative z-10">
         <form onSubmit={handleSendMessage} className="flex gap-3">
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Tanya roster atau fitur..." className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-[11px] font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:text-white" />
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Tanya roster, bibit, atau fitur..." className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-[11px] font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:text-white" />
           <button type="submit" disabled={!input.trim() || isTyping} className="w-12 h-12 bg-slate-900 dark:bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-90 disabled:opacity-50 transition-all">
             <i className="fas fa-paper-plane text-xs"></i>
           </button>
