@@ -23,7 +23,7 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: 'mom', title: 'MOM Meeting', icon: 'fa-handshake', href: 'https://www.appsheet.com/start/f912f118-c330-4435-b1f2-2d8834992211' },
   { id: 'pesticide', title: 'Manajemen Pestisida', icon: 'fa-spray-can', href: 'https://www.appsheet.com/start/c686e2ea-ef8d-47bd-9318-80d81163c0c3' },
   // Fix: Removed 'icon_type' which does not exist in MenuItem and added required 'href'.
-  { id: 'montana-v2', title: 'Montana Camera V2', icon: 'fa-camera', href: '#', badge: 'Admin' },
+  { id: 'montana-v2', title: 'Montana Camera V2', icon: 'fa-camera', href: 'https://kameracerdas2.vercel.app/', badge: 'Admin' },
   { id: 'height', title: 'Pengukur Tinggi', icon: 'fa-arrows-alt-v', href: 'https://ebastari.github.io/Tinggi/Tinggi%20Fix.Html' },
   { id: 'carbon', title: 'Serapan Karbon', icon: 'fa-smog', href: 'https://ebastari.github.io/Dasboard-Karbon/Karbon', badge: 'New' },
 ];
